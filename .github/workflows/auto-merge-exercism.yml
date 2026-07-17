@@ -1,0 +1,26 @@
+name: Auto-merge Exercism solutions
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge-exercism:
+    if: >
+      github.event.pull_request.user.login == 'exercism-solutions-syncer[bot]' &&
+      github.event.pull_request.base.ref == 'main' &&
+      startsWith(github.event.pull_request.head.ref, 'exercism-sync/') &&
+      startsWith(github.event.pull_request.title, '[Sync')
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Merge Exercism pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge "$PR_URL" --merge --delete-branch
